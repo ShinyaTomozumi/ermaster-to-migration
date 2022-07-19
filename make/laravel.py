@@ -317,7 +317,7 @@ class Laravel:
                 foreign_key_name = table_info.table_name + '_' + foreign_key.colum_name + '_foreign'
 
                 # drop foreign の設定
-                drop_source += '            $table->dropForeign(\'{}\')\n'.format(foreign_key_name)
+                drop_source += '            $table->dropForeign(\'{}\');\n'.format(foreign_key_name)
 
                 # 外部キーの設定
                 foreign_key_source += '->foreign(\'{}\', \'{}\')'.format(foreign_key.colum_name, foreign_key_name)
