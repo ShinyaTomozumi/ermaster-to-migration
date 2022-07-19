@@ -62,8 +62,6 @@ class ImportExcelFile:
         """
         # 「全ての属性」からテーブル情報を取得する
         sheet = self.exel_info['全ての属性']
-        print('最大列: ' + str(sheet.max_column))
-        print('最大行: ' + str(sheet.max_row))
 
         # 一時保存の変数
         tmp_is_created_at_flag = False
