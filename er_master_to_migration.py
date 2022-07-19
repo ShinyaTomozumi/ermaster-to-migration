@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
     # 引数の初期化
     parameter_config = ParameterConfig
-    parameter_config.output_dir_path = os.path.dirname(__file__) + '/' + 'output_files'
+    parameter_config.output_dir_path = 'output_files'
 
     # 受け取ったパラメータを引数に設定する。
     i = 0
