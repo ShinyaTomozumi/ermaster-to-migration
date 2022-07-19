@@ -330,7 +330,7 @@ class Laravel:
 
                 # onUpdate と onDeleteの設定
                 foreign_key_source += '->onUpdate(\'NO ACTION\')'
-                foreign_key_source += '->onDelete(\'NO ACTION\')\n'
+                foreign_key_source += '->onDelete(\'NO ACTION\');\n'
 
             template_source = template_source.replace('__source_code__', foreign_key_source)
             template_source = template_source.replace('__drop_source_code__', drop_source)
