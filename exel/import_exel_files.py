@@ -127,11 +127,6 @@ class ImportExcelFile:
                     and (colum_info.colum_name == 'created_at' or colum_info.colum_name == 'updated_at'):
                 tmp_is_created_at_flag = True
 
-            # 主キーが存在するかどうかを確認して、主キーであれば主キーの配列を追加する
-            if colum_pk is not None and colum_pk.find('○') != -1:
-                table_info.primary_keys.append(colum_name)
-                colum_info.is_primary = True
-
             # このカラムがタイムスタンプの場合には「dates」に追加する
             if colum_info.database_colum_type.lower().find('timestamp') != -1:
                 table_info.dates.append(colum_info.colum_name)
@@ -147,6 +142,12 @@ class ImportExcelFile:
                      colum_info.colum_name.lower().find('bigserial') != -1):
                 table_info.is_incrementing = True
                 colum_info.is_auto_increment = True
+
+            # 主キーが存在するかどうかを確認して、主キーであれば主キーの配列を追加する
+            # また対象のカラムが既にオートインクリメントで無い場合のみ主キーを追加する
+            if colum_pk is not None and colum_pk.find('○') != -1 and not colum_info.is_auto_increment:
+                table_info.primary_keys.append(colum_name)
+                colum_info.is_primary = True
 
             # NotNullかどうかを判定して、存在した場合はカラム情報のNotNullをTrueにする
             if colum_not_null is not None and colum_not_null.find('○') != -1:
