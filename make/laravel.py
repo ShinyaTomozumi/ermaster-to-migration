@@ -171,6 +171,11 @@ class Laravel:
 
         # テーブルごとのEntityファイルを作成する
         for table_info in self.import_exel_files.table_info_list:
+            # 「migration」テーブルは作成しない
+            if table_info.table_name == 'migrations':
+                continue
+
+            # クラス名の作成
             file_top_date = self.parameter_config.date.replace('-', '_')
             pascal_table_name = re.sub("_(.)", lambda x: x.group(1).upper(), table_info.table_name.capitalize())
             if self.parameter_config.version != '0':
