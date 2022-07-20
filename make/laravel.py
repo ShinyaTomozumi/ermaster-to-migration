@@ -1,9 +1,10 @@
 from exel.import_exel_files import ImportExcelFile
 from models.parameter_config import ParameterConfig
+from models.table_property import TableProperty
 from typing import Type
+from contains.app_contains import AppContains
 import os
 import re
-import datetime
 import shutil
 
 
@@ -50,9 +51,9 @@ class Laravel:
         :return:
         """
         # 保存先のフォルダを作成する
-        output_dirs_entity = self.parameter_config.output_dir_path + '/app/Entities'
+        output_dirs_entity = self.parameter_config.output_dir_path + AppContains.EntitiesDirPath
         os.makedirs(output_dirs_entity, exist_ok=True)
-        output_dirs_ext_entity = self.parameter_config.output_dir_path + '/app/ExtEntities'
+        output_dirs_ext_entity = self.parameter_config.output_dir_path + AppContains.ExtEntitiesDirPath
         os.makedirs(output_dirs_ext_entity, exist_ok=True)
 
         # Entity.phpファイルの初期化
@@ -137,10 +138,10 @@ class Laravel:
             source_entity_file.write(entity_source)
             source_entity_file.close()
 
-            # ExeEntityファイルの作成
+            # ExtEntityファイルの作成
             self.__make_ext_entities_files(output_dirs_ext_entity, table_info.table_display_name, entity_name)
 
-    def __make_ext_entities_files(self, output_dirs, comment, entity_name):
+    def __make_ext_entities_files(self, output_dirs: str, comment: str, entity_name: str):
         """
         ExtEntityファイルの作成
         :return:
@@ -166,7 +167,7 @@ class Laravel:
         class_base = 'Create'
         console_message = 'Create migration create table: '
         # 保存先のフォルダを作成する
-        output_dirs_migrations = self.parameter_config.output_dir_path + '/database/migrations'
+        output_dirs_migrations = self.parameter_config.output_dir_path + AppContains.MigrationDirPath
         os.makedirs(output_dirs_migrations, exist_ok=True)
 
         # テーブルごとのEntityファイルを作成する
@@ -194,7 +195,7 @@ class Laravel:
 
             # テンプレートソースコードを取得する
             template_source_file = open(os.path.dirname(__file__) + '/../template/laravel/migration_create_table.php',
-                                     'r')
+                                        'r')
             template_source = template_source_file.read()
             template_source = template_source.replace('__table_name_display__', table_info.table_display_name)
             template_source = template_source.replace('__table_name__', table_info.table_name)
@@ -204,7 +205,8 @@ class Laravel:
             colum_source = ''
             for colum_info in table_info.column_list:
                 # timestampsが設定されている場合は「created_at」と「updated_at」は設定しない
-                if table_info.is_timestamps and (colum_info.colum_name == 'created_at' or colum_info.colum_name == 'updated_at'):
+                if table_info.is_timestamps and \
+                        (colum_info.colum_name == 'created_at' or colum_info.colum_name == 'updated_at'):
                     continue
 
                 colum_source += '            '
@@ -282,7 +284,7 @@ class Laravel:
         class_base = 'AddForeignKeysTo'
         console_message = 'Create migration foreign key: '
         # 保存先のフォルダを作成する
-        output_dirs_migrations = self.parameter_config.output_dir_path + '/database/migrations'
+        output_dirs_migrations = self.parameter_config.output_dir_path + AppContains.MigrationDirPath
         os.makedirs(output_dirs_migrations, exist_ok=True)
 
         # テーブルごとのEntityファイルを作成する
@@ -355,7 +357,7 @@ class Laravel:
         class_base = 'AddIndexTo'
         console_message = 'Create migration indexes: '
         # 保存先のフォルダを作成する
-        output_dirs_migrations = self.parameter_config.output_dir_path + '/database/migrations'
+        output_dirs_migrations = self.parameter_config.output_dir_path + AppContains.MigrationDirPath
         os.makedirs(output_dirs_migrations, exist_ok=True)
 
         # テーブルごとのEntityファイルを作成する
@@ -458,7 +460,7 @@ class Laravel:
 
         return ''
 
-    def __get_primary_key_for_migration(self, table_info) -> list:
+    def __get_primary_key_for_migration(self, table_info: TableProperty) -> list[str]:
         """
         マイグレーション作成用のプライマリーキーを作成する
         :return array:

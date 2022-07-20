@@ -1,9 +1,10 @@
-from typing import Type
+from typing import Type, List
 
 import openpyxl
 import pyexcel as p
 import os
 
+from openpyxl import Workbook
 from models.parameter_config import ParameterConfig
 from models.colum_property import ColumProperty
 from models.table_property import TableProperty
@@ -16,8 +17,8 @@ class ImportExcelFile:
     エクセルからデータベース作成用ファイルを作成する。
     """
     config = ParameterConfig
-    exel_info = ''
-    table_info_list = []
+    exel_info: Workbook = None
+    table_info_list: List[TableProperty] = []
 
     def __init__(self, g: Type[ParameterConfig]):
         """
@@ -64,7 +65,7 @@ class ImportExcelFile:
         sheet = self.exel_info['全ての属性']
 
         # 一時保存の変数
-        tmp_is_created_at_flag = False
+        tmp_is_created_at_flag: bool = False
 
         # テーブル情報を初期化する
         table_info = TableProperty()
@@ -109,7 +110,6 @@ class ImportExcelFile:
             colum_info.colum_name = colum_name
             colum_info.colum_comment = colum_name_display
             colum_info.colum_type = colum_type
-            colum_info.database_colum_type = colum_type
             colum_info.length = colum_length
             colum_info.decimal = colum_decimal
             colum_info.default_value = colum_default_value
@@ -126,7 +126,7 @@ class ImportExcelFile:
                 tmp_is_created_at_flag = True
 
             # このカラムがタイムスタンプの場合には「dates」に追加する
-            if colum_info.database_colum_type.lower().find('timestamp') != -1:
+            if colum_info.colum_type.lower().find('timestamp') != -1:
                 table_info.dates.append(colum_info.colum_name)
 
             # 「deleted_at」が存在するテーブルはソフトデリート対応とする
@@ -170,9 +170,9 @@ class ImportExcelFile:
         sheet = self.exel_info['全てのテーブル']
 
         # ループ中に使用する一時的なフラグ
-        is_foreign_key_flag = False     # 外部キーフラグ
-        tmp_foreign_key_list = []       # 一時的な外部キーリスト
-        table_name = ''
+        is_foreign_key_flag: bool = False  # 外部キーフラグ
+        tmp_foreign_key_list: list = []  # 一時的な外部キーリスト
+        table_name: str = ''
 
         # すべてのセルを読み込む
         for row_num in range(1, sheet.max_row + 1):
@@ -192,7 +192,7 @@ class ImportExcelFile:
 
             # 外部キー設定モードで空白になればモードを解除する
             if is_foreign_key_flag and cell_name is None:
-                is_foreign_key_flag = False     # 外部キーフラグをFalseにする
+                is_foreign_key_flag = False  # 外部キーフラグをFalseにする
 
             # セル名が「テーブル名 (物理名)」であれば新しいテーブル情報と判断して新規に
             if cell_name == 'テーブル名 (物理名)' or cell_name == 'Table name (physical name)':
@@ -203,7 +203,7 @@ class ImportExcelFile:
                         # 該当するテーブル名のテーブル情報に対して外部キー情報を設定する
                         if table_info.table_name == table_name:
                             table_info.foreign_keys = tmp_foreign_key_list
-                            break   # 情報を設定すると、これ以上の処理は無駄なので抜ける
+                            break  # 情報を設定すると、これ以上の処理は無駄なので抜ける
 
                 # 初期化処理
                 table_name = sheet['B' + str(row_num)].value  # テーブル名を設定する
@@ -220,29 +220,29 @@ class ImportExcelFile:
         """
         sheet = self.exel_info['全てのインデックス']
 
-        is_index_colum_mode = False     # インデックスのカラム追加状態
-        index_property = None           # インデックス情報を初期化
-        tmp_index_property_list = []    # インデックス情報の一覧
+        is_index_colum_mode: bool = False  # インデックス対象のカラムを追加する状態
+        index_property: IndexProperty = IndexProperty()  # インデックス情報を初期化
+        tmp_index_property_list: list = []  # インデックス情報の一覧
 
         # すべてのセルを読み込む
         for row_num in range(1, sheet.max_row + 1):
             cell_name = sheet['A' + str(row_num)].value  # Aのセル名称
 
-            # インデックスカラムモードとなっており、空白となった場合にインデックスカラムモードを解除する
+            # インデックス対象のカラムを追加する状態となっており、空白となった場合にインデックス対象のカラムを追加する状態を解除する
             if is_index_colum_mode and (cell_name is None or cell_name == ''):
                 is_index_colum_mode = False
                 continue
 
-            # インデックスカラムモードで値があれば対象となるインデックスカラムを追加する
+            # インデックス対象のカラムを追加する状態で読み込んだセルに値があれば対象となるインデックスカラムを追加する
             if is_index_colum_mode and (cell_name is not None and cell_name != ''):
                 index_property.colum_list.append(sheet['C' + str(row_num)].value)
                 continue
 
-            # インデック名を取得する
+            # セルに「インデック名」とあれば新規にインデックス情報を取得する
             if cell_name == 'インデックス名':
-                is_index_colum_mode = False     # インデックスのカラム取得状態にする
+                is_index_colum_mode = False  # インデックスのカラム取得状態にする
 
-                # インデックス情報が存在していた場合は処理を追加する
+                # セルで読み込んだインデックス情報が存在していた場合はインデックス情報を追加する
                 if index_property is not None:
                     tmp_index_property_list.append(index_property)
 
