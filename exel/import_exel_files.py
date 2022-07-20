@@ -143,7 +143,7 @@ class ImportExcelFile:
 
             # 主キーが存在するかどうかを確認して、主キーであれば主キーの配列を追加する
             # また対象のカラムが既にオートインクリメントで無い場合のみ主キーを追加する
-            if colum_pk is not None and colum_pk.find('○') != -1 and not colum_info.is_auto_increment:
+            if colum_pk is not None and colum_pk.find('○') != -1:
                 table_info.primary_keys.append(colum_name)
                 colum_info.is_primary = True
 

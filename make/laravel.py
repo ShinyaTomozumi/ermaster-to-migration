@@ -255,12 +255,13 @@ class Laravel:
             colum_source += '\n'
 
             # プライマリキーの設定
-            if len(table_info.primary_keys) == 1:
-                colum_source += '            $table->primary(\'{}\', \'{}\');\n'.format(table_info.primary_keys[0],
-                                                                                      table_info.table_name + '_pkey')
-            if len(table_info.primary_keys) > 1:
+            primary_kes = self.__get_primary_key_for_migration(table_info)
+            if len(primary_kes) == 1:
+                colum_source += '            $table->primary(\'{}\', \'{}\');\n'.format(primary_kes[0],
+                                                                                        table_info.table_name + '_pkey')
+            if len(primary_kes) > 1:
                 colum_source += '            $table->primary([\'{}\'], \'{}\');\n'.format(
-                    '\', \''.join(table_info.primary_keys),
+                    '\', \''.join(primary_kes),
                     table_info.table_name + '_pkey')
 
             # timestamps の設定
@@ -456,3 +457,16 @@ class Laravel:
             return 'date'
 
         return ''
+
+    def __get_primary_key_for_migration(self, table_info) -> list:
+        """
+        マイグレーション作成用のプライマリーキーを作成する
+        :return array:
+        """
+        primary_keys = table_info.primary_keys
+        # プライマリーキーの中にオートインクリメントの設定があれば削除する
+        for colum_info in table_info.column_list:
+            if colum_info.is_auto_increment and colum_info.colum_name in primary_keys:
+                primary_keys.remove(colum_info.colum_name)
+
+        return primary_keys
