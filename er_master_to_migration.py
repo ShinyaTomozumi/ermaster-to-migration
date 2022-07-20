@@ -52,7 +52,7 @@ if __name__ == '__main__':
         i += 1
 
     # プロジェクトの種類が設定されていない場合はエラーを返却する
-    if parameter_config .project_type == '':
+    if parameter_config.project_type == '':
         print('Set the project type (-project).\n - laravel')
         exit()
 
