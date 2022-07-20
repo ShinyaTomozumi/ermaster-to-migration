@@ -44,7 +44,7 @@ if __name__ == '__main__':
         # 出力先のパスを取得する
         if arg == '-o':
             if (i + 1) < len(args):
-                parameter_config.output_dir_path = os.path.dirname(__file__) + '/' + args[i + 1]
+                parameter_config.output_dir_path = args[i + 1]
         # プロジェクトの種類を設定する
         if arg == '-project':
             if (i + 1) < len(args):
