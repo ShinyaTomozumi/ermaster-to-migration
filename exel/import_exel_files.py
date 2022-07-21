@@ -1,10 +1,10 @@
-from typing import Type, List
+import os
 
 import openpyxl
 import pyexcel as p
-import os
-
+from typing import List
 from openpyxl import Workbook
+
 from models.parameter_config import ParameterConfig
 from models.colum_property import ColumProperty
 from models.table_property import TableProperty
@@ -16,33 +16,26 @@ class ImportExcelFile:
     """
     エクセルからデータベース作成用ファイルを作成する。
     """
-    config = ParameterConfig
-    exel_info: Workbook = None
-    table_info_list: List[TableProperty] = []
+    _config = ParameterConfig
+    _exel_info: Workbook
+    table_info_list: List[TableProperty]
 
-    def __init__(self, g: Type[ParameterConfig]):
+    def __init__(self, g: ParameterConfig):
         """
         初期化
         :param g:
         """
-        self.config = g
-        pass
+        self._config = g
+        self.table_info_list = []
 
-    def import_exel(self):
-        """
-        エクセルを取り込みデータベースのオブジェクトに変換する
-       :return:
-        """
-        # 作業用のxlsxファイルの設定(xlsファイルは読み込めないため)
-        exel_dir_path = os.path.split(self.config.input_files_path)
+        # 「openpyxl」ではxlsファイルは読み込めないため作業用に「xlsx」ファイルを作成する
+        exel_dir_path = os.path.split(self._config.input_files_path)
         job_exel_file_path = exel_dir_path[0] + '/import_job.xlsx'
-
-        # 作業用にxlsxファイルを保存する
-        p.save_book_as(file_name=self.config.input_files_path,
+        p.save_book_as(file_name=self._config.input_files_path,
                        dest_file_name=job_exel_file_path)
 
         # エクセル情報の取り込み
-        self.exel_info = openpyxl.load_workbook(job_exel_file_path)
+        self._exel_info = openpyxl.load_workbook(job_exel_file_path)
 
         # テーブル情報を作成する
         self.__make_table_info_list()
@@ -53,7 +46,7 @@ class ImportExcelFile:
         # インデックス情報を設定する
         self.__make_index_list()
 
-        # 作業で使用したエクセルは削除する
+        # 作業で使用した「xls」ファイルは削除する
         os.remove(job_exel_file_path)
 
     def __make_table_info_list(self):
@@ -62,7 +55,7 @@ class ImportExcelFile:
         :return:
         """
         # 「全ての属性」からテーブル情報を取得する
-        sheet = self.exel_info['全ての属性']
+        sheet = self._exel_info['全ての属性']
 
         # 一時保存の変数
         tmp_is_created_at_flag: bool = False
@@ -102,7 +95,7 @@ class ImportExcelFile:
                 table_info = TableProperty()
                 table_info.table_name = table_name
                 table_info.table_display_name = table_name_display
-                table_info.date_format = self.config.date_format
+                table_info.date_format = self._config.date_format
                 tmp_is_created_at_flag = False
 
             # カラム情報の初期化を行う
@@ -167,7 +160,7 @@ class ImportExcelFile:
         紐付け情報を設定する
         :return:
         """
-        sheet = self.exel_info['全てのテーブル']
+        sheet = self._exel_info['全てのテーブル']
 
         # ループ中に使用する一時的なフラグ
         is_foreign_key_flag: bool = False  # 外部キーフラグ
@@ -218,7 +211,7 @@ class ImportExcelFile:
         インデック情報一覧を設定する
         :return:
         """
-        sheet = self.exel_info['全てのインデックス']
+        sheet = self._exel_info['全てのインデックス']
 
         is_index_colum_mode: bool = False  # インデックス対象のカラムを追加する状態
         index_property: IndexProperty = IndexProperty()  # インデックス情報を初期化

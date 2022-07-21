@@ -22,8 +22,7 @@ if __name__ == '__main__':
     args = sys.argv
 
     # 引数の初期化
-    parameter_config = ParameterConfig
-    parameter_config.output_dir_path = 'output_files'
+    parameter_config = ParameterConfig()
 
     # 受け取ったパラメータを引数に設定する。
     i = 0
@@ -78,11 +77,14 @@ if __name__ == '__main__':
 
     # エクセルを読み込みデータベース情報を返却する
     import_exel_files = ImportExcelFile(parameter_config)
-    import_exel_files.import_exel()
 
     # プロジェクトの種類によって書き出すファイルを設定する
     if parameter_config.project_type == 'laravel':
         laravel = Laravel(parameter_config, import_exel_files)
-        laravel.make_files()
+        laravel.make()
+    else:
+        print('The specified project does not exist.')
+        exit()
 
+    # Show finish message
     print('Finish er_master_to_migration...')

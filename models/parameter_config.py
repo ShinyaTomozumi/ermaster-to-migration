@@ -2,13 +2,13 @@ class ParameterConfig:
     """
     コマンドで受け取ったパラメータの設定
     """
-    input_files_path: str = ''  # 取り込むファイルのパス
-    output_dir_path: str = ''  # 書き出すフォルダの名称
-    sql_type: int = 1  # sqlのタイプ
-    date_format: str = ''  # 日付フォーマット
-    date: str = ''  # 作成日時
-    project_type: str = ''  # Migrationとモデルを使用するプロジェクトの種類
-    version: str = ''  # バージョン
+    input_files_path: str  # 取り込むファイルのパス
+    output_dir_path: str  # 書き出すフォルダの名称
+    sql_type: int  # sqlのタイプ
+    date_format: str  # 日付フォーマット
+    date: str  # 作成日時
+    project_type: str  # Migrationとモデルを使用するプロジェクトの種類
+    version: str  # バージョン
 
     def __init__(self):
         self.input_files_path = ''  # 取り込むファイルのパス

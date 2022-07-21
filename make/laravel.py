@@ -1,37 +1,45 @@
-from exel.import_exel_files import ImportExcelFile
-from models.parameter_config import ParameterConfig
-from models.table_property import TableProperty
-from typing import Type
-from contains.app_contains import AppContains
 import os
 import re
 import shutil
+
+from typing import Type
+
+from exel.import_exel_files import ImportExcelFile
+from contains.app_contains import AppContains
+from models.parameter_config import ParameterConfig
+from models.table_property import TableProperty
 
 
 class Laravel:
     """
     Laravel用のファイルを書き出す処理
     """
-    parameter_config = None
-    import_exel_files = None
+    _parameter_config: ParameterConfig
+    _import_exel_files: ImportExcelFile
+    _template_dir: str
 
-    def __init__(self, parameter_config: Type[ParameterConfig], import_exel_files: Type[ImportExcelFile]):
+    def __init__(self, parameter_config: ParameterConfig, import_exel_files: ImportExcelFile):
         """
         初期化
         :param parameter_config:
         :param import_exel_files:
         """
-        self.parameter_config = parameter_config
+        self._parameter_config = parameter_config
+        # 出力先のフォルダの初期化設定
+        if self._parameter_config.output_dir_path == '':
+            self._parameter_config.output_dir_path = 'output_database_laravel'
         self.import_exel_files = import_exel_files
+        # テンプレートソースのフォルダを指定する
+        self._template_dir = os.path.dirname(__file__) + '/../template/laravel'
 
-    def make_files(self):
+    def make(self):
         """
         ファイルの書き出し
         :return:
         """
         # 作成しているフォルダを削除する
-        if os.path.isdir(self.parameter_config.output_dir_path):
-            shutil.rmtree(self.parameter_config.output_dir_path)
+        if os.path.isdir(self._parameter_config.output_dir_path):
+            shutil.rmtree(self._parameter_config.output_dir_path)
 
         # Entityに関するファイルを作成する
         self.__make_entities_files()
@@ -51,16 +59,16 @@ class Laravel:
         :return:
         """
         # 保存先のフォルダを作成する
-        output_dirs_entity = self.parameter_config.output_dir_path + AppContains.EntitiesDirPath
+        output_dirs_entity = self._parameter_config.output_dir_path + AppContains.EntitiesDirPath
         os.makedirs(output_dirs_entity, exist_ok=True)
-        output_dirs_ext_entity = self.parameter_config.output_dir_path + AppContains.ExtEntitiesDirPath
+        output_dirs_ext_entity = self._parameter_config.output_dir_path + AppContains.ExtEntitiesDirPath
         os.makedirs(output_dirs_ext_entity, exist_ok=True)
 
         # Entity.phpファイルの初期化
         source_entity_base_file = open(output_dirs_entity + '/Entity.php', 'w')
 
         # 基本となるEntityファイルソースを取得して保存する
-        entity_base_file = open(os.path.dirname(__file__) + '/../template/laravel/Entity.php', 'r')
+        entity_base_file = open(self._template_dir + '/Entity.php', 'r')
         entity_base_source = entity_base_file.read()
         source_entity_base_file.write(entity_base_source)
         source_entity_base_file.close()
@@ -80,7 +88,7 @@ class Laravel:
             print('Create entity files: ' + table_name)
 
             # ソースのテンプレートを取得する
-            entity_file = open(os.path.dirname(__file__) + '/../template/laravel/Entities.php', 'r')
+            entity_file = open(self._template_dir + '/Entities.php', 'r')
             entity_source = entity_file.read()
             entity_source = entity_source.replace('__table_name__', table_info.table_name)
 
@@ -147,7 +155,7 @@ class Laravel:
         :return:
         """
         # ソースのテンプレートを取得する
-        ext_entity_file = open(os.path.dirname(__file__) + '/../template/laravel/ExtEntities.php', 'r')
+        ext_entity_file = open(self._template_dir + '/ExtEntities.php', 'r')
         ext_entity_source = ext_entity_file.read()
         ext_entity_source = ext_entity_source.replace('__ext_entity_name__', 'Ext' + entity_name)
         ext_entity_source = ext_entity_source.replace('__entity_name__', entity_name)
@@ -167,7 +175,7 @@ class Laravel:
         class_base = 'Create'
         console_message = 'Create migration create table: '
         # 保存先のフォルダを作成する
-        output_dirs_migrations = self.parameter_config.output_dir_path + AppContains.MigrationDirPath
+        output_dirs_migrations = self._parameter_config.output_dir_path + AppContains.MigrationDirPath
         os.makedirs(output_dirs_migrations, exist_ok=True)
 
         # テーブルごとのEntityファイルを作成する
@@ -177,9 +185,9 @@ class Laravel:
                 continue
 
             # クラス名の作成
-            file_top_date = self.parameter_config.date.replace('-', '_')
+            file_top_date = self._parameter_config.date.replace('-', '_')
             pascal_table_name = re.sub("_(.)", lambda x: x.group(1).upper(), table_info.table_name.capitalize())
-            if self.parameter_config.version != '0':
+            if self._parameter_config.version != '0':
                 # バージョンが0以外の場合は後ろに何も設定しない
                 file_name = file_top_date + base_name + table_info.table_name + '_table.php'
                 # クラス名を作成する
@@ -188,14 +196,13 @@ class Laravel:
             else:
                 # バージョンが0以外の場合は後ろに何も設定しない
                 file_name = file_top_date + base_name + table_info.table_name + \
-                            '_' + self.parameter_config.version + '_table.php'
+                            '_' + self._parameter_config.version + '_table.php'
                 # クラス名を作成する
-                class_name = class_base + pascal_table_name + self.parameter_config.version + 'Table'
+                class_name = class_base + pascal_table_name + self._parameter_config.version + 'Table'
                 print(console_message + file_name)
 
             # テンプレートソースコードを取得する
-            template_source_file = open(os.path.dirname(__file__) + '/../template/laravel/migration_create_table.php',
-                                        'r')
+            template_source_file = open(self._template_dir + '/migration_create_table.php', 'r')
             template_source = template_source_file.read()
             template_source = template_source.replace('__table_name_display__', table_info.table_display_name)
             template_source = template_source.replace('__table_name__', table_info.table_name)
@@ -212,6 +219,9 @@ class Laravel:
                 colum_source += '            '
                 # カラムの種類を取得する
                 colum_type = self.__get_colum_type_migrations_mysql(colum_info.colum_type)
+                if colum_type == '':
+                    print('Not set colum_type' + colum_info.colum_type)
+                    continue
 
                 # 桁数を設定する
                 if colum_info.length is not None \
@@ -284,7 +294,7 @@ class Laravel:
         class_base = 'AddForeignKeysTo'
         console_message = 'Create migration foreign key: '
         # 保存先のフォルダを作成する
-        output_dirs_migrations = self.parameter_config.output_dir_path + AppContains.MigrationDirPath
+        output_dirs_migrations = self._parameter_config.output_dir_path + AppContains.MigrationDirPath
         os.makedirs(output_dirs_migrations, exist_ok=True)
 
         # テーブルごとのEntityファイルを作成する
@@ -294,9 +304,9 @@ class Laravel:
                 continue
 
             # ファイル名の作成
-            file_top_date = self.parameter_config.date.replace('-', '_')
+            file_top_date = self._parameter_config.date.replace('-', '_')
             pascal_table_name = re.sub("_(.)", lambda x: x.group(1).upper(), table_info.table_name.capitalize())
-            if self.parameter_config.version != '0':
+            if self._parameter_config.version != '0':
                 # バージョンが0以外の場合は後ろに何も設定しない
                 file_name = file_top_date + base_name + table_info.table_name + '.php'
                 # クラス名を作成する
@@ -305,14 +315,13 @@ class Laravel:
             else:
                 # バージョンが0以外の場合は後ろに何も設定しない
                 file_name = file_top_date + base_name + table_info.table_name + \
-                            '_' + self.parameter_config.version + '.php'
+                            '_' + self._parameter_config.version + '.php'
                 # クラス名を作成する
-                class_name = class_base + pascal_table_name + self.parameter_config.version
+                class_name = class_base + pascal_table_name + self._parameter_config.version
                 print(console_message + file_name)
 
             # テンプレートソースコードを取得する
-            template_source_file = open(os.path.dirname(__file__) + '/../template/laravel/migration_foreign_key.php',
-                                        'r')
+            template_source_file = open(self._template_dir + '/migration_foreign_key.php', 'r')
             template_source = template_source_file.read()
             template_source = template_source.replace('__table_name__', table_info.table_name)
             template_source = template_source.replace('__class_name__', class_name)
@@ -357,7 +366,7 @@ class Laravel:
         class_base = 'AddIndexTo'
         console_message = 'Create migration indexes: '
         # 保存先のフォルダを作成する
-        output_dirs_migrations = self.parameter_config.output_dir_path + AppContains.MigrationDirPath
+        output_dirs_migrations = self._parameter_config.output_dir_path + AppContains.MigrationDirPath
         os.makedirs(output_dirs_migrations, exist_ok=True)
 
         # テーブルごとのEntityファイルを作成する
@@ -367,9 +376,9 @@ class Laravel:
                 continue
 
             # ファイル名の作成
-            file_top_date = self.parameter_config.date.replace('-', '_')
+            file_top_date = self._parameter_config.date.replace('-', '_')
             pascal_table_name = re.sub("_(.)", lambda x: x.group(1).upper(), table_info.table_name.capitalize())
-            if self.parameter_config.version != '0':
+            if self._parameter_config.version != '0':
                 # バージョンが0以外の場合は後ろに何も設定しない
                 file_name = file_top_date + base_name + table_info.table_name + '.php'
                 # クラス名を作成する
@@ -378,14 +387,13 @@ class Laravel:
             else:
                 # バージョンが0以外の場合は後ろに何も設定しない
                 file_name = file_top_date + base_name + table_info.table_name + \
-                            '_' + self.parameter_config.version + '.php'
+                            '_' + self._parameter_config.version + '.php'
                 # クラス名を作成する
-                class_name = class_base + pascal_table_name + self.parameter_config.version
+                class_name = class_base + pascal_table_name + self._parameter_config.version
                 print(console_message + file_name)
 
             # テンプレートソースコードを取得する
-            template_source_file = open(os.path.dirname(__file__) + '/../template/laravel/migration_index.php',
-                                        'r')
+            template_source_file = open(self._template_dir + '/migration_index.php', 'r')
             template_source = template_source_file.read()
             template_source = template_source.replace('__table_name__', table_info.table_name)
             template_source = template_source.replace('__class_name__', class_name)
