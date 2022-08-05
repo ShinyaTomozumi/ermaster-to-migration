@@ -6,7 +6,7 @@ use Illuminate\Database\Schema\Blueprint;
 /**
  * __table_name_display__ テーブルの作成
  */
-class __class_name__ extends Migration
+return new class extends Migration
 {
 	/**
 	 * Run the migrations.

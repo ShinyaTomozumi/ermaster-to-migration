@@ -6,7 +6,8 @@ use Illuminate\Database\Schema\Blueprint;
 /**
  * __table_name__ のインデックス設定
  */
-class __class_name__ extends Migration {
+return new class extends Migration
+{
 
 	/**
 	 * Run the migrations.
