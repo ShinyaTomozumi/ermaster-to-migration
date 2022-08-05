@@ -30,4 +30,4 @@ __source_code__
     {
         Schema::drop('__table_name__');
     }
-}
+};
