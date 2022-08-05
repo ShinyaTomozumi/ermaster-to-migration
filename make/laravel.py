@@ -47,11 +47,11 @@ class Laravel:
         # テーブル作成のマイグレーションファイルを作成する
         self.__make_migration_create_table()
 
-        # 外部キーの設定
-        self.__make_migration_foreign_key()
-
         # インデックスファイルの作成
         self.__make_migration_index()
+
+        # 外部キーの設定
+        self.__make_migration_foreign_key()
 
     def __make_entities_files(self):
         """
@@ -290,7 +290,7 @@ class Laravel:
         foreign key ファイルを作成する
         :return:
         """
-        base_name = '_00001_add_foreign_keys_to_'
+        base_name = '_00002_add_foreign_keys_to_'
         class_base = 'AddForeignKeysTo'
         console_message = 'Create migration foreign key: '
         # 保存先のフォルダを作成する
@@ -362,7 +362,7 @@ class Laravel:
         インデックス ファイルを作成する
         :return:
         """
-        base_name = '_00002_add_index_to_'
+        base_name = '_00001_add_index_to_'
         class_base = 'AddIndexTo'
         console_message = 'Create migration indexes: '
         # 保存先のフォルダを作成する
