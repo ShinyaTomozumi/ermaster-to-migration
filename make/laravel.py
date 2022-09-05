@@ -196,7 +196,7 @@ class Laravel:
             else:
                 # バージョンが0以外の場合は後ろに何も設定しない
                 file_name = file_top_date + base_name + table_info.table_name + \
-                            '_' + self._parameter_config.version + '_table.php'
+                            '_' + self._parameter_config.version + '_table'
                 # クラス名を作成する
                 class_name = class_base + pascal_table_name + self._parameter_config.version + 'Table'
                 print(console_message + file_name)
@@ -315,7 +315,7 @@ class Laravel:
             else:
                 # バージョンが0以外の場合は後ろに何も設定しない
                 file_name = file_top_date + base_name + table_info.table_name + \
-                            '_' + self._parameter_config.version + '.php'
+                            '_' + self._parameter_config.version
                 # クラス名を作成する
                 class_name = class_base + pascal_table_name + self._parameter_config.version
                 print(console_message + file_name)
@@ -387,7 +387,7 @@ class Laravel:
             else:
                 # バージョンが0以外の場合は後ろに何も設定しない
                 file_name = file_top_date + base_name + table_info.table_name + \
-                            '_' + self._parameter_config.version + '.php'
+                            '_' + self._parameter_config.version
                 # クラス名を作成する
                 class_name = class_base + pascal_table_name + self._parameter_config.version
                 print(console_message + file_name)
