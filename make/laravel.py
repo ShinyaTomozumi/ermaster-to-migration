@@ -189,7 +189,7 @@ class Laravel:
             pascal_table_name = re.sub("_(.)", lambda x: x.group(1).upper(), table_info.table_name.capitalize())
             if self._parameter_config.version != '0':
                 # バージョンが0以外の場合は後ろに何も設定しない
-                file_name = file_top_date + base_name + table_info.table_name + '_table.php'
+                file_name = file_top_date + base_name + table_info.table_name + '_table'
                 # クラス名を作成する
                 class_name = class_base + pascal_table_name + 'Table'
                 print(console_message + file_name)
@@ -308,7 +308,7 @@ class Laravel:
             pascal_table_name = re.sub("_(.)", lambda x: x.group(1).upper(), table_info.table_name.capitalize())
             if self._parameter_config.version != '0':
                 # バージョンが0以外の場合は後ろに何も設定しない
-                file_name = file_top_date + base_name + table_info.table_name + '.php'
+                file_name = file_top_date + base_name + table_info.table_name
                 # クラス名を作成する
                 class_name = class_base + pascal_table_name
                 print(console_message + file_name)
@@ -380,7 +380,7 @@ class Laravel:
             pascal_table_name = re.sub("_(.)", lambda x: x.group(1).upper(), table_info.table_name.capitalize())
             if self._parameter_config.version != '0':
                 # バージョンが0以外の場合は後ろに何も設定しない
-                file_name = file_top_date + base_name + table_info.table_name + '.php'
+                file_name = file_top_date + base_name + table_info.table_name
                 # クラス名を作成する
                 class_name = class_base + pascal_table_name
                 print(console_message + file_name)
