@@ -51,5 +51,5 @@ Thank you!<br>
 ## Author
  
 * Shinya Tomozumi
-* Hinco System
+* Tomozumi System
 * Twitter : https://twitter.com/hincoco27
