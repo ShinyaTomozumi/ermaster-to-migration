@@ -218,7 +218,11 @@ class Laravel:
 
                 colum_source += '            '
                 # カラムの種類を取得する
-                colum_type = self.__get_colum_type_migrations_mysql(colum_info.colum_type)
+                if self._parameter_config.project_type == 'mysql':
+                    colum_type = self.__get_colum_type_migrations_mysql(colum_info.colum_type)
+                else:
+                    colum_type = self.__get_colum_type_migrations_postgres(colum_info.colum_type)
+
                 if colum_type == '':
                     print('Not set colum_type' + colum_info.colum_type)
                     continue
@@ -421,9 +425,10 @@ class Laravel:
             source_migration_file.write(template_source)
             source_migration_file.close()
 
-    def __get_colum_type_migrations_mysql(self, colum_type: str) -> str:
+    @staticmethod
+    def __get_colum_type_migrations_mysql(colum_type: str) -> str:
         """
-        カラムの種類をマイグレーション用に返却する
+        カラムの種類をマイグレーション用に返却する(MySQL)
         :param colum_type:
         :return:
         """
@@ -468,7 +473,60 @@ class Laravel:
 
         return ''
 
-    def __get_primary_key_for_migration(self, table_info: TableProperty) -> list[str]:
+    @staticmethod
+    def __get_colum_type_migrations_postgres(colum_type: str) -> str:
+        """
+        カラムの種類をマイグレーション用に返却する(PostgreSQL)
+        :param colum_type:
+        :return:
+        """
+        check_str = colum_type.lower()
+        # 定義されているカラムの種類に応じてマイグレーションで使用する文字列に変換する
+        if check_str.startswith('char') or check_str.startswith('varchar') or check_str.startswith('bytea'):
+            return 'string'
+        elif check_str.startswith('text'):
+            return 'text'
+        elif check_str.startswith('timestamp with time zone') or check_str.startswith('timestamp(p) with time zone'):
+            return 'timestampTz'
+        elif check_str.startswith('timestamp'):
+            return 'timestamp'
+        elif check_str.startswith('int'):
+            return 'integer'
+        elif check_str.startswith('bigserial'):
+            return 'bigIncrements'
+        elif check_str.startswith('serial'):
+            return 'increments'
+        elif check_str.startswith('bigint'):
+            return 'bigInteger'
+        elif check_str.startswith('smallint'):
+            return 'smallInteger'
+        elif check_str.startswith('tinyint'):
+            return 'tinyInteger'
+        elif check_str.startswith('tinytext'):
+            return 'tinyText'
+        elif check_str.startswith('year'):
+            return 'year'
+        elif check_str.startswith('time'):
+            return 'time'
+        elif check_str.startswith('datetime'):
+            return 'datetime'
+        elif check_str.startswith('float'):
+            return 'float'
+        elif check_str.startswith('boolean'):
+            return 'boolean'
+        elif check_str.startswith('binary'):
+            return 'binary'
+        elif check_str.startswith('double'):
+            return 'double'
+        elif check_str.startswith('decimal'):
+            return 'decimal'
+        elif check_str.startswith('date'):
+            return 'date'
+
+        return ''
+
+    @staticmethod
+    def __get_primary_key_for_migration(table_info: TableProperty) -> list[str]:
         """
         マイグレーション作成用のプライマリーキーを作成する
         :return array:

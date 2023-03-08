@@ -30,7 +30,8 @@ if __name__ == '__main__':
         # Sqlタイプを設定する
         if arg == '-sql':
             if (i + 1) < len(args):
-                if args[i + 1].lower() == 'postgresql':
+                if args[i + 1].lower() == 'postgresql' \
+                        or args[i + 1].lower() == 'postgres':
                     parameter_config.sql_type = sql_type.SqlType.PostgreSQL
         # 日付を設定する
         if arg == '-date':
@@ -71,15 +72,23 @@ if __name__ == '__main__':
         exit()
 
     # ファイルの拡張子が「xls」もしくは「xlsx」以外の場合はエラーを返却する
-    if not parameter_config.input_files_path.endswith('xls') and not parameter_config.input_files_path.endswith('xlsx'):
+    if not parameter_config.input_files_path.endswith('xls') \
+            and not parameter_config.input_files_path.endswith('xlsx'):
         print('The specified file is not a "xls" or "xlsx" file.')
         exit()
 
     # エクセルを読み込みデータベース情報を返却する
     import_exel_files = ImportExcelFile(parameter_config)
 
+    # Show Message
+    if parameter_config.sql_type == sql_type.SqlType.MySQL:
+        print('Database Type: MySQL')
+    else:
+        print('Database Type: PostgreSQL')
+
     # プロジェクトの種類によって書き出すファイルを設定する
     if parameter_config.project_type == 'laravel':
+        print('Project Type: Laravel')
         laravel = Laravel(parameter_config, import_exel_files)
         laravel.make()
     else:
