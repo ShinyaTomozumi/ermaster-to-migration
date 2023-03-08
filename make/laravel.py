@@ -534,7 +534,10 @@ class Laravel:
         primary_keys = table_info.primary_keys
         # プライマリーキーの中にオートインクリメントの設定があれば削除する
         for colum_info in table_info.column_list:
-            if colum_info.is_auto_increment and colum_info.colum_name in primary_keys:
+            if (colum_info.is_auto_increment
+                or colum_info.colum_type == 'serial'
+                or colum_info.colum_type == 'bigserial') \
+                    and colum_info.colum_name in primary_keys:
                 primary_keys.remove(colum_info.colum_name)
 
         return primary_keys
