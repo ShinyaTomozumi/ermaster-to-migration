@@ -8,6 +8,7 @@ from exel.import_exel_files import ImportExcelFile
 from contains.app_contains import AppContains
 from models.parameter_config import ParameterConfig
 from models.table_property import TableProperty
+from contains.sql_type import SqlType
 
 
 class Laravel:
@@ -218,7 +219,7 @@ class Laravel:
 
                 colum_source += '            '
                 # カラムの種類を取得する
-                if self._parameter_config.project_type == 'mysql':
+                if self._parameter_config.sql_type == SqlType.MySQL:
                     colum_type = self.__get_colum_type_migrations_mysql(colum_info.colum_type)
                 else:
                     colum_type = self.__get_colum_type_migrations_postgres(colum_info.colum_type)
@@ -258,7 +259,10 @@ class Laravel:
                 if colum_info.default_value is not None and colum_info.default_value != '':
                     colum_source += '->default(\'{}\')'.format(colum_info.default_value)
                 elif colum_type.startswith('int') and not colum_info.is_auto_increment:
-                    colum_source += '->default(\'0.0\')'
+                    if self._parameter_config.sql_type == SqlType.MySQL:
+                        colum_source += '->default(\'0.0\')'
+                    else:
+                        colum_source += '->default(\'0\')'
 
                 # is_auto_increment 設定
                 if colum_info.is_auto_increment:
