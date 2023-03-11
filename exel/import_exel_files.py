@@ -129,8 +129,8 @@ class ImportExcelFile:
             # オートインクリメントが存在するか確認して、存在した場合はテーブルとカラムの両方のインクリメント情報をTrueにする
             # またはテーブルの設定が「serial」または「bigserial」の場合も、テーブルとカラムの両方のインクリメントをTrueにする
             if (colum_auto_increment is not None and colum_auto_increment == '○') or \
-                    (colum_info.colum_name.lower().find('serial') != -1 or
-                     colum_info.colum_name.lower().find('bigserial') != -1):
+                    (colum_info.colum_type.lower().find('serial') != -1 or
+                     colum_info.colum_type.lower().find('bigserial') != -1):
                 table_info.is_incrementing = True
                 colum_info.is_auto_increment = True
 

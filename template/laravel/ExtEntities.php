@@ -2,7 +2,7 @@
 
 namespace App\ExtEntities;
 
-use App\Entities\__entity_name__;
+use App\ExtEntities\Entities\__entity_name__;
 
 /**
  * __comment__ 拡張クラス

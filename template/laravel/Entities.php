@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Entities;
+namespace App\ExtEntities\Entities;
 
 /**
  * __comment__
