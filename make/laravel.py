@@ -474,6 +474,8 @@ class Laravel:
             return 'decimal'
         elif check_str.startswith('date'):
             return 'date'
+        elif check_str.startswith('uuid'):
+            return 'uuid'
 
         return ''
 
@@ -526,6 +528,8 @@ class Laravel:
             return 'decimal'
         elif check_str.startswith('date'):
             return 'date'
+        elif check_str.startswith('uuid'):
+            return 'uuid'
 
         return ''
 
