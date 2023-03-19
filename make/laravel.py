@@ -257,7 +257,10 @@ class Laravel:
 
                 # default 設定
                 if colum_info.default_value is not None and colum_info.default_value != '':
-                    colum_source += '->default(\'{}\')'.format(colum_info.default_value)
+                    if colum_info.default_value == '<現在日時>':
+                        colum_source += '->useCurrent()'
+                    else:
+                        colum_source += '->default(\'{}\')'.format(colum_info.default_value)
                 elif colum_type.startswith('int') and not colum_info.is_auto_increment:
                     if self._parameter_config.sql_type == SqlType.MySQL:
                         colum_source += '->default(\'0.0\')'
