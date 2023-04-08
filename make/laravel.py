@@ -495,38 +495,45 @@ class Laravel:
                         or colum.colum_type == 'tinyint':
                     # 数値の場合は、ランダム数値を設定する。
                     colum_code += '            '
-                    colum_code += '"{}" => $this->faker->randomNumber(),\n'.format(colum.colum_name)
+                    colum_code += '"{}" => $this->faker->randomNumber(), // {}'\
+                        .format(colum.colum_name, colum.colum_comment)
                 elif colum.colum_type.startswith('char') \
                         or colum.colum_type.startswith('varchar') \
                         or colum.colum_type == 'bytea':
                     # 文字列の場合は、ランダム文字列を設定する
                     colum_code += '            '
                     if colum.length is not None:
-                        colum_code += '"{}" => \\Illuminate\\Support\\Str::random({}),\n'\
-                            .format(colum.colum_name, colum.length)
+                        colum_code += '"{}" => \\Illuminate\\Support\\Str::random({}),  // {}'\
+                            .format(colum.colum_name, colum.length, colum.colum_comment)
                     else:
-                        colum_code += '"{}" => \\Illuminate\\Support\\Str::random(),\n'.format(colum.colum_name)
+                        colum_code += '"{}" => \\Illuminate\\Support\\Str::random(),  // {}'\
+                            .format(colum.colum_name, colum.colum_comment)
                 elif colum.colum_type == 'text':
                     # テキストの場合は、テキスト形式のランダム文字列を設定する
                     colum_code += '            '
-                    colum_code += '"{}" => $this->faker->realText(1000),\n'.format(colum.colum_name)
+                    colum_code += '"{}" => $this->faker->realText(1000),  // {}'\
+                        .format(colum.colum_name, colum.colum_comment)
                 elif colum.colum_type == 'boolean':
                     # ブール値の場合は、ランダムブール値を設定する
                     colum_code += '            '
-                    colum_code += '"{}" => $this->faker->boolean,\n'.format(colum.colum_name)
+                    colum_code += '"{}" => $this->faker->boolean,  // {}'\
+                        .format(colum.colum_name, colum.colum_comment)
                 elif colum.colum_type == 'uuid':
                     # UUIDの場合は、ランダムUUIDを設定する
                     colum_code += '            '
-                    colum_code += '"{}" => $this->faker->unique()->uuid,\n'.format(colum.colum_name)
+                    colum_code += '"{}" => $this->faker->unique()->uuid,  // {}'\
+                        .format(colum.colum_name, colum.colum_comment)
                 elif colum.colum_type.startswith('timestamp'):
                     # タイムスタンプの場合は、未来の日付をランダムで作成
                     colum_code += '            '
-                    colum_code += '"{}" => $this->faker->dateTimeBetween("now", "+1 year")->getTimestamp(),\n'\
-                        .format(colum.colum_name)
+                    colum_code += '"{}" => $this->faker->dateTimeBetween("now", "+1 year")->getTimestamp(),  // {}'\
+                        .format(colum.colum_name, colum.colum_comment)
                 else:
                     # その他の場合は、nullを設定する
                     colum_code += '            '
-                    colum_code += '"{}" => null,\n'.format(colum.colum_name)
+                    colum_code += '"{}" => null,  // {}'.format(colum.colum_name, colum.colum_comment)
+
+                colum_code += '\n'
             # カラムのソースコードを設定する
             entity_source = entity_source.replace('__columns__', colum_code)
 
