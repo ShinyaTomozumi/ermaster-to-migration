@@ -5,3 +5,4 @@ class AppContains:
     EntitiesDirPath: str = '/app/ExtEntities/Entities'
     ExtEntitiesDirPath: str = '/app/ExtEntities/'
     MigrationDirPath: str = '/database/migrations/'
+    FactoryDirPath: str = '/database/factories/'

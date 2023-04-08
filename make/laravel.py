@@ -54,14 +54,18 @@ class Laravel:
         # 外部キーの設定
         self.__make_migration_foreign_key()
 
+        # Factory ファイルを作成する
+        self.__make_factories()
+
     def __make_entities_files(self):
         """
         Entityに関するファイルの書き出し
         :return:
         """
-        # 保存先のフォルダを作成する
+        # Entity保存先のフォルダを作成する
         output_dirs_entity = self._parameter_config.output_dir_path + AppContains.EntitiesDirPath
         os.makedirs(output_dirs_entity, exist_ok=True)
+        # ExtEntityに関するフォルダを作成する
         output_dirs_ext_entity = self._parameter_config.output_dir_path + AppContains.ExtEntitiesDirPath
         os.makedirs(output_dirs_ext_entity, exist_ok=True)
 
@@ -104,7 +108,8 @@ class Laravel:
 
             # SoftDeleteのフラグ
             if table_info.is_soft_deleted:
-                entity_source = entity_source.replace('__soft_delete__', r'use \Illuminate\Database\Eloquent\SoftDeletes;')
+                entity_source = entity_source.replace('__soft_delete__',
+                                                      r'use \Illuminate\Database\Eloquent\SoftDeletes;')
             else:
                 entity_source = entity_source.replace('__soft_delete__', '')
 
@@ -431,6 +436,104 @@ class Laravel:
             source_migration_file = open(output_dirs_migrations + '/{}.php'.format(file_name), 'w')
             source_migration_file.write(template_source)
             source_migration_file.close()
+
+    def __make_factories(self):
+        """
+        Factory ファイルを作成する
+        :return:
+        """
+        # 保存先のフォルダを作成する
+        output_dirs_factory = self._parameter_config.output_dir_path + AppContains.FactoryDirPath
+        os.makedirs(output_dirs_factory, exist_ok=True)
+
+        # テーブルごとのEntityファイルを作成する
+        for table_info in self.import_exel_files.table_info_list:
+            # 複数形式となっているテーブル名称を修正する
+            table_name = table_info.table_name
+            if table_name.endswith('ies'):
+                # 最後に「ies」場合は「y」に変換する（例: histories -> history)
+                table_name = table_name[0:len(table_name) - 3]
+                table_name = table_name + 'y'
+            elif table_name.endswith('s'):
+                # 最後が「s」の場合はその「s」を削除する
+                table_name = table_name[0:len(table_name) - 1]
+
+            print('Create Factories files: ' + table_name)
+
+            # ソースのテンプレートを取得する
+            entity_file = open(self._template_dir + '/Factory.php', 'r')
+            entity_source = entity_file.read()
+
+            # テーブル名をパスカルケースに変換する
+            pascal_table_name = re.sub("_(.)", lambda x: x.group(1).upper(), table_name.capitalize())
+
+            # 「Entity」名を設定する
+            entity_name = pascal_table_name + 'Entity'
+            entity_source = entity_source.replace('__entity_name__', entity_name)
+
+            # 「Factory」名を設定する
+            factory_name = pascal_table_name + 'Factory'
+            entity_source = entity_source.replace('__factory_name__', factory_name)
+
+            # コメントを設定する
+            entity_source = entity_source.replace('__comment__', table_info.table_display_name)
+
+            # カラム名を設定する
+            colum_code = ''
+            for colum in table_info.column_list:
+                if colum.colum_type == 'bigserial' \
+                        or colum.colum_type == 'serial' \
+                        or (colum.colum_type == 'int' and colum.is_auto_increment) \
+                        or (colum.colum_type == 'bigint' and colum.is_auto_increment)\
+                        or colum.colum_name == 'created_at' \
+                        or colum.colum_name == 'updated_at' \
+                        or colum.colum_name == 'deleted_at':
+                    # 主キーの場合は、設定しない
+                    continue
+                elif colum.colum_type == 'int' \
+                        or colum.colum_type == 'bigint' \
+                        or colum.colum_type == 'tinyint':
+                    # 数値の場合は、ランダム数値を設定する。
+                    colum_code += '            '
+                    colum_code += '"{}" => $this->faker->randomNumber(),\n'.format(colum.colum_name)
+                elif colum.colum_type.startswith('char') \
+                        or colum.colum_type.startswith('varchar') \
+                        or colum.colum_type == 'bytea':
+                    # 文字列の場合は、ランダム文字列を設定する
+                    colum_code += '            '
+                    if colum.length is not None:
+                        colum_code += '"{}" => \\Illuminate\\Support\\Str::random({}),\n'\
+                            .format(colum.colum_name, colum.length)
+                    else:
+                        colum_code += '"{}" => \\Illuminate\\Support\\Str::random(),\n'.format(colum.colum_name)
+                elif colum.colum_type == 'text':
+                    # テキストの場合は、テキスト形式のランダム文字列を設定する
+                    colum_code += '            '
+                    colum_code += '"{}" => $this->faker->realText(1000),\n'.format(colum.colum_name)
+                elif colum.colum_type == 'boolean':
+                    # ブール値の場合は、ランダムブール値を設定する
+                    colum_code += '            '
+                    colum_code += '"{}" => $this->faker->boolean,\n'.format(colum.colum_name)
+                elif colum.colum_type == 'uuid':
+                    # UUIDの場合は、ランダムUUIDを設定する
+                    colum_code += '            '
+                    colum_code += '"{}" => $this->faker->unique()->uuid,\n'.format(colum.colum_name)
+                elif colum.colum_type.startswith('timestamp'):
+                    # タイムスタンプの場合は、未来の日付をランダムで作成
+                    colum_code += '            '
+                    colum_code += '"{}" => $this->faker->dateTimeBetween("now", "+1 year")->getTimestamp(),\n'\
+                        .format(colum.colum_name)
+                else:
+                    # その他の場合は、nullを設定する
+                    colum_code += '            '
+                    colum_code += '"{}" => null,\n'.format(colum.colum_name)
+            # カラムのソースコードを設定する
+            entity_source = entity_source.replace('__columns__', colum_code)
+
+            # ソースコードを書き込み保存する
+            source_entity_file = open(output_dirs_factory + '/{}.php'.format(factory_name), 'w')
+            source_entity_file.write(entity_source)
+            source_entity_file.close()
 
     @staticmethod
     def __get_colum_type_migrations_mysql(colum_type: str) -> str:
