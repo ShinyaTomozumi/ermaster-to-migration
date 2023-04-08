@@ -485,8 +485,8 @@ class Laravel:
                         or colum.colum_type == 'serial' \
                         or (colum.colum_type == 'int' and colum.is_auto_increment) \
                         or (colum.colum_type == 'bigint' and colum.is_auto_increment)\
-                        or colum.colum_name == 'created_at' \
-                        or colum.colum_name == 'updated_at' \
+                        or (colum.colum_name == 'created_at' and table_info.is_timestamps)\
+                        or (colum.colum_name == 'updated_at' and table_info.is_timestamps)\
                         or colum.colum_name == 'deleted_at':
                     # 主キーの場合は、設定しない
                     continue
@@ -524,10 +524,16 @@ class Laravel:
                     colum_code += '"{}" => $this->faker->unique()->uuid,  // {}'\
                         .format(colum.colum_name, colum.colum_comment)
                 elif colum.colum_type.startswith('timestamp'):
-                    # タイムスタンプの場合は、未来の日付をランダムで作成
-                    colum_code += '            '
-                    colum_code += '"{}" => $this->faker->dateTimeBetween("now", "+1 year")->getTimestamp(),  // {}'\
-                        .format(colum.colum_name, colum.colum_comment)
+                    if colum.colum_name == 'created_at' or colum.colum_name == 'updated_at':
+                        # タイムスタンプの場合は、未来の日付をランダムで作成
+                        colum_code += '            '
+                        colum_code += '"{}" => \\Carbon\\Carbon::now(),  // {}'\
+                            .format(colum.colum_name, colum.colum_comment)
+                    else:
+                        # タイムスタンプの場合は、未来の日付をランダムで作成
+                        colum_code += '            '
+                        colum_code += '"{}" => $this->faker->dateTimeBetween("now", "+1 year")->getTimestamp(),  // {}'\
+                            .format(colum.colum_name, colum.colum_comment)
                 else:
                     # その他の場合は、nullを設定する
                     colum_code += '            '
