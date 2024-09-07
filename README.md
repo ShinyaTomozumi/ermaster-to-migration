@@ -27,8 +27,7 @@ But no guarantees.<br/>
 
 The following libraries are used to read Excel files.
 ```commandline
-pip install openpyxl
-pip install pyexcel
+pip install openpyxl pyexcel pyexcel-xls pyexcel-xlsx
 ```
 
 ## Options
